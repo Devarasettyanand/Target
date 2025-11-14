@@ -1,0 +1,145 @@
+1. Find the no. of days taken to deliver each order from the order’s purchase date as delivery time.Also, calculate the difference (in days) between the estimated & actual delivery date of an order.
+
+
+with deliverytime_cte as
+(select order_id,
+      extract(date from order_delivered_customer_date) as Delivered_date,
+      extract(date from order_purchase_timestamp) as Ordered_date,
+      extract(date from order_estimated_delivery_date) as Expected_delivery_date,
+      date_diff(extract(date from order_delivered_customer_date),extract(date from order_purchase_timestamp),day) as Delivery_time,
+      date_diff(extract(date from order_estimated_delivery_date),extract(date from order_delivered_customer_date),day) as Diff_estimated_and_actual_delivery
+from `Target.orders`
+where order_delivered_customer_date is not null
+order by 6 desc)
+(select *,
+      'Top_5' as Ranking
+from deliverytime_cte
+limit 5)
+UNION ALL
+(select *,
+      'Bottom_5' as Ranking
+from deliverytime_cte
+order by 6
+limit 5)
+
+
+2. Find out the top 5 states with the highest & lowest average freight value.
+
+
+with Top_5_cte as
+(
+select customer_state,round(average_freight_value,2) as Avg_Freight_val
+,'Top 5' as Ranking
+from
+(select c.customer_state,avg(oi.freight_value) as average_freight_value,
+      dense_rank()over(order by avg(oi.freight_value)desc) as ranking
+from `Target.order_items` oi
+join `Target.orders` o on o.order_id = oi.order_id
+join `Target.customers` c on c.customer_id = o.customer_id
+group by c.customer_state
+)tb1
+where ranking <=5),
+Bottom_5_cte as
+(
+select customer_state,round(average_freight_value,2) as Avg_Freight_val
+,'Bottom 5' as Ranking
+from
+(select c.customer_state,avg(oi.freight_value) as average_freight_value,
+      dense_rank()over(order by avg(oi.freight_value) asc) as ranking
+from `Target.order_items` oi
+join `Target.orders` o on o.order_id = oi.order_id
+join `Target.customers` c on c.customer_id = o.customer_id
+group by c.customer_state
+)tb2
+where ranking <=5
+order by 2 asc
+)
+select * from Top_5_cte
+union ALL
+select * from Bottom_5_cte
+order by 2 desc
+
+3. Find out the top 5 states with the highest & lowest average delivery time.
+
+with delivery_time_calc as
+(select o.order_id,
+       o.customer_id,
+       c.customer_state,
+       extract(date from o.order_purchase_timestamp) as Ordered_date,
+extract(date from o.order_delivered_customer_date) as Delivered_date,
+date_diff(extract(date from o.order_delivered_customer_date),
+extract(date from o.order_purchase_timestamp),day) as Delivery_time
+from `Target.orders` o
+join `Target.customers` c
+on o.customer_id = c.customer_id
+where extract(date from o.order_delivered_customer_date) is not null
+order by 4,5,6
+)
+(select customer_state,round(avg(Delivery_time),2) as Avg_Delivery_time,'Top 5' as Ranking
+from delivery_time_calc
+group by customer_state
+order by 2 desc
+limit 5)
+UNION ALL
+(select customer_state,round(avg(Delivery_time),2),'Bottom 5' as Ranking
+from delivery_time_calc
+group by customer_state
+order by 2 asc
+limit 5)
+
+
+4. Find out the top 5 states where the order delivery is really fast as compared to the estimated date of delivery.
+
+(select c.customer_state,
+      count(*) as No_of_orders,
+      'Top 5'
+from `Target.orders` o join `Target.customers` c on c.customer_id = o.customer_id
+where extract(date from o.order_delivered_customer_date) < extract(date from o.order_estimated_delivery_date)
+group by 1
+order by 2 desc
+limit 5)
+UNION ALL
+(select c.customer_state,
+      count(*) as No_of_orders,
+      'Bottom 5'
+from `Target.orders` o join `Target.customers` c on c.customer_id = o.customer_id
+where extract(date from o.order_delivered_customer_date) < extract(date from o.order_estimated_delivery_date)
+group by 1
+order by 2 asc
+limit 5)
+order by 2 desc
+
+Analysis based on the payments
+
+1. Find the month on month no. of orders placed using different payment types.
+
+
+with payments_cte as
+(select p.payment_type,FORMAT_DATETIME("%B", DATETIME(order_purchase_timestamp)) as Month,count(p.order_id) as No_of_Orders,round(sum(payment_value)) as Total_payment_value,
+      dense_rank()over(partition by p.payment_type order by count(p.order_id))as rank_of_orders
+from `Target.payments` p
+join `Target.orders` o on o.order_id = p.order_id
+group by 1,2)
+
+
+select payment_type,Month,No_of_Orders,Total_payment_value
+from payments_cte
+where rank_of_orders <= 5
+order by 1,3 desc
+
+
+2. Find the no. of orders placed on the basis of the payment installments that have been paid.
+
+
+select 
+Payment_installments,
+count(order_id) as No_of_Orders,
+sum(payment_value) as Total_value_of_payments
+from `Target.payments`
+where payment_value>0
+group by 1
+order by 3 desc
+
+
+
+
