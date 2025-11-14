@@ -1,0 +1,24 @@
+1. Get the month on month no. of orders placed in each state.
+
+With state_vs_month_cte as
+(
+select c.customer_state as State, format_datetime("%B",o.order_purchase_timestamp) as Month, count(o.customer_id) as No_of_orders_placed
+from `Target.orders` o
+join `Target.customers` c
+on o.customer_id = c.customer_id
+group by 1,2,extract(month from o.order_purchase_timestamp)
+order by 1,extract(month from o.order_purchase_timestamp)
+)
+select * from
+(select *,row_number()over(partition by State order by No_of_orders_placed desc) as TOP_3
+from state_vs_month_cte s) e
+where TOP_3 <=3
+order by 1
+
+
+2. How are the customers distributed across all the states?
+
+select customer_state as State, count(customer_id) as No_of_customers
+from `Target.customers`
+group by customer_state
+order by 2 desc
