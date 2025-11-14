@@ -1,1 +1,7 @@
+1. Data type of all columns in the "customers" table.
+
+select column_name, data_type
+from `sql-scaler-450218.Target.INFORMATION_SCHEMA.COLUMNS`
+where table_name = 'customers'
+
 
