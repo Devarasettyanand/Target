@@ -1,0 +1,89 @@
+1. Get the % increase in the cost of orders from year 2017 to 2018 (include months between Jan to Aug only).
+
+with orders_total as
+(
+select extract(year from o.order_purchase_timestamp) as Year,
+       round(sum(p.payment_value),2) as Cost_of_Orders,
+from `Target.payments` p
+join `Target.orders` o on o.order_id = p.order_id
+where extract(year from o.order_purchase_timestamp) in (2017,2018) 
+and extract(month from o.order_purchase_timestamp) in (1,2,3,4,5,6,7,8)
+group by 1
+order by 1
+),
+first_year as
+(
+select ord.Year,
+         ord.Cost_of_Orders 
+from orders_total ord
+where ord.Year = 2017
+),
+second_year as
+( 
+select ord.Year,
+        ord.Cost_of_Orders 
+from orders_total ord
+where ord.Year = 2018)
+select * from first_year
+UNION ALL
+Select s.year,
+round(((s.Cost_of_Orders-f.Cost_of_Orders)*100)/f.Cost_of_Orders),2)
+from
+first_year f
+join second_year s
+on f.year<s.Year
+UNION ALL
+select * from second_year
+
+2. Calculate the Total & Average value of order price for each state.
+
+select c.customer_state,
+      count(c.customer_state) as Count_of_order,
+      round(sum(oi.price),2) as Total_value_Order_price,
+      round(avg(oi.price),2) as Average_value_Order_price
+from `Target.order_items` oi
+join `Target.orders` o on o.order_id=oi.order_id
+join `Target.customers` c on c.customer_id=o.customer_id
+group by 1
+order by 4 desc
+
+3. Calculate the Total & Average value of order freight for each state.
+
+select c.customer_state,
+ count(c.customer_state) as Count_of_freight,
+ round(sum(oi.freight_value),2) as Total_value_Freight_value,
+ round(avg(oi.freight_value),2) as Average_value_Freight_value
+from `Target.order_items` oi
+join `Target.orders` o on o.order_id=oi.order_id
+join `Target.customers` c on c.customer_id=o.customer_id
+group by 1
+order by 4 desc
+
+4. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
