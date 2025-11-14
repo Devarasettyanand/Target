@@ -26,11 +26,13 @@ Dataset: https://drive.google.com/drive/folders/1TGEc66YKbD443nslRi1bWgVd238gJCn
 
 The data is available in 8 csv files:
 
-customers.csv
-sellers.csv
-order_items.csv
-geolocation.csv
-payments.csv
-reviews.csv
-orders.csv
-products.csv
+1. customers.csv
+2. sellers.csv
+3. order_items.csv
+4. geolocation.csv
+5. payments.csv
+6. reviews.csv
+7. orders.csv
+8. products.csv
+
+
