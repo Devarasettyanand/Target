@@ -1,7 +1,87 @@
 1. Data type of all columns in the "customers" table.
 
-select column_name, data_type
+select column_name, 
+       data_type
 from `sql-scaler-450218.Target.INFORMATION_SCHEMA.COLUMNS`
 where table_name = 'customers'
+
+2. Get the time range between which the orders were placed.
+
+select min(timestamp(order_purchase_timestamp)) as First_date_time,
+       max(timestamp(order_purchase_timestamp)) as Last_date_time,
+	     extract(date from   min(timestamp(order_purchase_timestamp))) as First_date,
+       extract(date from max(timestamp(order_purchase_timestamp))) as Last_date
+from  `Target.orders`
+
+3. Count the Cities & States of customers who ordered during the given period.
+
+select count(distinct customer_city) as Cities,
+       count(distinct customer_state) as States
+from `Target.customers` 
+
+4. Is there a growing trend in the no. of orders placed over the past years?
+
+select extract(year from order_purchase_timestamp) as Year,
+      count(*) as Orders_placed
+from `Target.orders`
+group by 1
+order by 1
+
+5. Can we see some kind of monthly seasonality in terms of the no. of orders being placed?
+
+select extract(year from order_purchase_timestamp) as Year,
+      extract(month from order_purchase_timestamp) as Month,
+      count(*) as Orders_placed
+from `Target.orders`
+group by 1,2
+order by 1,2
+
+6. Top 3 months for orders_placed Year Wise
+
+with data_distribution as
+(
+select extract(year from order_purchase_timestamp) as Year,
+     FORMAT_DATETIME("%B", DATETIME(order_purchase_timestamp)) as Month,
+     count(*) as Orders_placed
+from `Target.orders`
+group by 1,2
+order by 1,2 desc
+)
+select * 
+from
+(
+select *,
+ dense_rank()over(partition by d.Year order by Orders_placed desc) as TOP_3
+from data_distribution d
+) e
+where TOP_5 <=3
+order by 1
+
+
+7. During what time of the day, do the Brazilian customers mostly place their orders? (Dawn, Morning, Afternoon or Night)
+0-6 hrs : Dawn 	
+7-12 hrs : Mornings	
+13-18 hrs : Afternoon
+19-23 hrs : Night
+
+with zone_cte as
+(
+select count(*) as Number_of_orders,
+      case when extract(hour from order_purchase_timestamp ) between 0 and 6 then 'Dawn'
+           when extract(hour from order_purchase_timestamp ) between 7 and 12 then 'Mornings'
+           when extract(hour from order_purchase_timestamp ) between 13 and 18 then 'Afternoon'
+           when extract(hour from order_purchase_timestamp ) between 19 and 23 then 'Night'
+      end as Zone
+from `Target.orders`
+group by 2
+order by 1
+)
+select *,
+      (z.Number_of_orders/(select count(*) from `Target.orders`))*100 as Percentage_share
+from zone_cte z
+
+
+
+
 
 
