@@ -39,24 +39,43 @@ The data is available in 8 csv files:
 OBSERVATIONS
 
 State vs Total Orders :
+
 Top 5 States (SP, MG, RJ, RS, PR) contribute to the bulk of the orders, with SP (38,108 orders) accounting for over 50% of the total volume.
+
 Bottom 5 States (RO, AM, AC, AP, RR) reflect low consumer activity, with RR contributing the least (36 orders).
+
 State vs Freight Charges :
+
 States with lower order volumes (such as RR, AP, and AC) are likely to incur higher freight costs per order due to distance and less frequent deliveries.
+
 High-order states (SP, MG)  benefit from economies of scale and reduced average shipping costs.
+
 State vs Customer Base :
+
 SP is the largest customer base, implying higher urban density and purchasing power.
+
 States like RR and AP have limited customer penetration, suggesting room for growth through customer acquisition campaigns.
+
 Payment Insights :
+
 Payment Method Preferences -
+
 UPI leads both order volume and payment value, particularly in high-order states.
+
 Credit Cards are the second most popular method, especially for high-ticket items.
+
 Debit Cards and Vouchers account for a small fraction of total transactions.
+
 Payment Installments -
+
 Single payments dominate (over 50% of orders).
+
 Installments between 3-10 months are popular, while 12+ month plans have minimal adoption.
+
 Seasonal Trends -
+
 January, November, and December are the busiest months for both UPI and Credit Card payments.
+
 September reflects moderate activity, suggesting potential for a pre-holiday push.
 
 
